@@ -1,0 +1,16 @@
+Flask==2.2.2
+numpy
+torch
+tqdm
+more-itertools
+transformers>=4.19.0
+ffmpeg-python==0.2.0
+git+https://github.com/openai/whisper.git
+gradio
+
+# used for transformer api
+
+openai==0.23.0
+twilio==7.14.0
+python-dotenv==0.21.0
+pytest==6.0.1

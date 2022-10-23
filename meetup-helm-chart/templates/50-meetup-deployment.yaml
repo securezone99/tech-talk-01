@@ -1,0 +1,40 @@
+{{- if .Values.microServices.transformer -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: meetup
+  name: meetup
+spec:
+  replicas: {{ .Values.resourcesMeetup.apps.meetup.replicaCount }}
+  selector:
+    matchLabels:
+      service: meetup
+      app: meetup
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        service: meetup
+        app: meetup
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: meetup
+        image: securezone/tech-talk:1.0
+        imagePullPolicy: {{ .Values.apps.meetup.image.pullPolicy | default "IfNotPresent" }}
+        env:
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: meetup-secret
+                key: password
+          - name: GPT_ENGINE
+            value: davinci
+        ports:
+          - name: http
+            containerPort: 7000
+            protocol: TCP
+        resources:
+{{ toYaml .Values.resourcesMeetup.apps.meetup.resources | indent 10 }}
+{{- end -}}

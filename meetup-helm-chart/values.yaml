@@ -1,0 +1,44 @@
+#Switch Services On and Off
+microServices: 
+  transformer: true
+  transformerIngress: true
+  scaler: true
+  meetupSecrets: true
+
+meetup:
+  gpt:
+    password: password
+
+service:
+  type: NodePort
+  whiserPort: 31111
+  microk8ks: true
+
+global:
+  security:
+    network:
+      policies:
+        enabled: false
+
+apps:
+  meetup:
+    image:
+      pullPolicy: Always
+
+resourcesMeetup:
+  apps:
+    meetup:
+      replicaCount: 1
+      resources:
+        requests:
+          memory: "10Mi"
+          cpu: "0.0001"
+        limits:
+          memory: "8568Mi"
+          cpu: "5.5"
+
+ingress:
+  routing: 
+    meetup: "public"
+  meetup:
+    host: meetup.com

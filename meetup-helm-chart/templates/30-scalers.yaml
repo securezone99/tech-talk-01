@@ -1,0 +1,31 @@
+{{- if .Values.microServices.scaler -}}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: whisper-cpu-scaler-deployment
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: meetup-whisper
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: AverageValue
+        averageValue: 0.1
+  behavior: 
+    scaleDown:
+      stabilizationWindowSeconds: 10
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 180
+      - type: Percent
+        value: 10
+        periodSeconds: 180
+      selectPolicy: Max
+{{- end -}}
