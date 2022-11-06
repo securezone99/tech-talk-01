@@ -1,4 +1,3 @@
-import os
 import gradio as gr
 import whisper
 
@@ -6,14 +5,17 @@ from dotenv import load_dotenv
 from random import choice
 import openai
 
-model = whisper.load_model("tiny.en")
+model = whisper.load_model("tiny")
 
 # Load Environment Variables.
 openai.api_key = os.getenv("OPENAI_API_KEY")
 completion = openai.Completion()
 
 def summerizeTransformerHandler(prompt, chat_log=None):
-
+    """
+    REST Request to the OpenAI API with a specific prompt
+    :return: Response object with the status code 200 containing the result as String
+    """
     start_sequence = "\nText:"
     examplePrompt="Write a list of the most important key takeaways from the text below. \n\nText:",
     
@@ -31,20 +33,26 @@ def summerizeTransformerHandler(prompt, chat_log=None):
     gptResponse = response['choices'][0]['text']
     return str(gptResponse)
 
-def inference(audio):
+def whisperInference(audio):
+    """
+    Wishper Model inference to transform speech to text for a specific String
+    :return: probs object with the result as String
+    """
     audio = whisper.load_audio(audio)
     audio = whisper.pad_or_trim(audio)
     
     mel = whisper.log_mel_spectrogram(audio).to(model.device)
-    
-    _, probs = model.detect_language(mel)
 
     options = whisper.DecodingOptions(fp16 = False)
     result = whisper.decode(model, mel, options)
 
     return result.text
 
-def inferenceLanguage(audio):
+def whisperInferenceLanguage(audio):
+    """
+    Wishper Model inference to transform speech to language code for a specific String
+    :return: probs object with the result as String
+    """
     audio = whisper.load_audio(audio)
     audio = whisper.pad_or_trim(audio)
     
@@ -52,15 +60,8 @@ def inferenceLanguage(audio):
     
     _, probs = model.detect_language(mel)
 
-    options = whisper.DecodingOptions(fp16 = False)
-    result = whisper.decode(model, mel, options)
-
-    print("Using Processing unit:" + str(model.device))
     return str({max(probs, key=probs.get)})
 
-title="Meetup meets Speechrecognition Model Whisper"
-
-description="Whisper is a general-purpose speech recognition model that is open source and can is deployed on PwC Site. No data is getting send to third party provider."
 
 css = """
         .gradio-container {
@@ -185,6 +186,7 @@ with block:
             </div>
         """
     )
+
     with gr.Group():
         with gr.Box():
             with gr.Row().style(mobile_collapse=False, equal_height=True):
@@ -195,18 +197,21 @@ with block:
                     type="filepath",
                     equal_height=True
                 )
+
             with gr.Row().style(mobile_collapse=False, equal_height=True):
                 transcribeButton = gr.Button("Transcribe Audio")
                 langueageDetectionButton = gr.Button("Language Detection")  
+
             whisperOutputText = gr.Textbox(show_label=False)          
             whisperLanguageOutputText = gr.Textbox(show_label=False)
             
             with gr.Row().style(mobile_collapse=False, equal_height=True):
                 gptSummarizeButton = gr.Button("GPT 3 Summarize Text")  
+
             gptSummorizeOutputText = gr.Textbox(show_label=False)
 
-        transcribeButton.click(inference, inputs=[audio], outputs=[whisperOutputText])
-        langueageDetectionButton.click(inferenceLanguage, inputs=[audio], outputs=[whisperLanguageOutputText])       
+        transcribeButton.click(whisperInference, inputs=[audio], outputs=[whisperOutputText])
+        langueageDetectionButton.click(whisperInferenceLanguage, inputs=[audio], outputs=[whisperLanguageOutputText])       
         gptSummarizeButton.click(summerizeTransformerHandler,inputs=[whisperOutputText], outputs=[gptSummorizeOutputText])
 
 
