@@ -1,8 +1,6 @@
 import gradio as gr
 import whisper
-
-from dotenv import load_dotenv
-from random import choice
+import os
 import openai
 
 model = whisper.load_model("tiny")
